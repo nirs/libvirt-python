@@ -249,13 +249,13 @@ for name in sorted(basicklassmap):
     # Remove 'Get' prefix from most APIs, except those in virConnect
     # and virDomainSnapshot namespaces which stupidly used a different
     # convention which we now can't fix without breaking API
-    if func[0:3] == "Get" and klass not in ["virConnect", "virDomainSnapshot", "libvirt"]:
+    if func[0:3] == "Get" and klass not in ["virConnect", "virDomainCheckpoint", "virDomainSnapshot", "libvirt"]:
         if func not in ["GetCPUStats", "GetTime"]:
             func = func[3:]
 
     # The object creation and lookup APIs all have to get re-mapped
     # into the parent class
-    if func in ["CreateXML", "CreateLinux", "CreateXMLWithFiles",
+    if func in ["CreateXML", "CreateXML2", "CreateLinux", "CreateXMLWithFiles",
                 "DefineXML", "CreateXMLFrom", "LookupByUUID",
                 "LookupByUUIDString", "LookupByVolume" "LookupByName",
                 "LookupByID", "LookupByName", "LookupByKey", "LookupByPath",
@@ -266,7 +266,7 @@ for name in sorted(basicklassmap):
         if klass != "virDomain":
             func = klass[3:] + func
 
-        if klass == "virDomainSnapshot":
+        if klass in [ "virDomainCheckpoint", "virDomainSnapshot"]:
             klass = "virDomain"
             func = func[6:]
         elif klass == "virStorageVol" and func in ["StorageVolCreateXMLFrom", "StorageVolCreateXML"]:
@@ -297,10 +297,13 @@ for name in sorted(basicklassmap):
     if func[0:6] == "Change":
         klass = "virConnect"
 
-    # Need to special case the snapshot APIs
+    # Need to special case the checkpoint and snapshot APIs
     if klass == "virDomainSnapshot" and func in ["Current", "ListNames", "Num"]:
         klass = "virDomain"
         func = "snapshot" + func
+    elif klass == "virDomainCheckpoint" and func == "Current":
+        klass = "virDomain"
+        func = "checkpoint" + func
 
     # Names should start with lowercase letter...
     func = func[0:1].lower() + func[1:]
