@@ -11,6 +11,19 @@
         return retlist
 
 
+    def listCheckpoints(self, flags=0):
+        """List all checkpoints and returns a list of checkpoint objects"""
+        ret = libvirtmod.virDomainListCheckpoints(self._o, flags)
+        if ret is None:
+            raise libvirtError("virDomainListCheckpoints() failed", conn=self)
+
+        retlist = list()
+        for chkptr in ret:
+            retlist.append(virDomainCheckpoint(self, _obj=chkptr))
+
+        return retlist
+
+
     def createWithFiles(self, files, flags=0):
         """Launch a defined domain. If the call succeeds the domain moves from the
         defined to the running domains pools.
